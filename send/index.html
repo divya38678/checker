@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ops Checkers - Document Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        /* Page Styles */
+        .page {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            opacity: 0.9;
+        }
+
+        .page-content {
+            padding: 2rem;
+        }
+
+        /* Dashboard Styles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        /* Work Item Details Styles */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .details-section {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .detail-item {
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            color: #111827;
+        }
+
+        .document-list {
+            list-style: none;
+        }
+
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .document-item:hover {
+            background: #f3f4f6;
+        }
+
+        .document-item.selected {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-valid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-review {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .document-viewer {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            color: #6b7280;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .personal-details {
+            background: #f0f9ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .verified-icon {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .filter-section {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .filter-input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            width: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-left {
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="nav-left">
+            <div class="logo"></div>
+            <div class="nav-item" onclick="showPage('dashboard')">DASHBOARD</div>
+            <div class="nav-item" onclick="showPage('work-queue')">WORK QUEUE</div>
+            <div class="nav-item" onclick="showPage('finished-tasks')">FINISHED TASKS</div>
+            <div class="nav-item">HELP</div>
+            <div class="nav-item">NOTIFICATIONS</div>
+        </div>
+        <div class="user-icon"></div>
+    </div>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <div class="page-header">
+                <h1 class="page-title">Operations Dashboard</h1>
+                <p class="page-subtitle">Monitor and manage document verification tasks</p>
+            </div>
+            <div class="page-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">24</div>
+                        <div class="stat-label">Pending Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">156</div>
+                        <div class="stat-label">Completed Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">In Review</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">92%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <button class="btn btn-primary" onclick="showPage('work-queue')">View Work Queue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Queue Page -->
+        <div id="work-queue" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Assigned Tasks</h1>
+                <p class="page-subtitle">Review and process pending work items</p>
+            </div>
+            <div class="page-content">
+                <div class="filter-section">
+                    <label>FILTER BY: </label>
+                    <input type="text" class="filter-input" placeholder="Enter Work ID, Name, or Date" onkeyup="filterTasks(this.value)">
+                </div>
+                <div class="table-container">
+                    <table id="tasks-table">
+                        <thead>
+                            <tr>
+                                <th>WORK ID</th>
+                                <th>SUBMITTED BY</th>
+                                <th>SUBMISSION DATE</th>
+                                <th>STATUS</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-work-id="WRK001">
+                                <td>WRK001</td>
+                                <td>John Doe</td>
+                                <td>2024-08-15</td>
+                                <td><span class="status-badge status-review">PENDING</span></td>
+                                <td><button class="btn btn-primary" onclick="viewWorkItem('WRK001')">VIEW</button></td>
+                            </tr>
+                            <tr data-work-id="WRK002">
+                                <td>WRK002</td>
+                                <td>Jane Smith</td>
+                                <td>2024-08-14</td>
+                                <td><span class="status-badge status-review">PENDING</span></td>
+                                <td><button class="btn btn-primary" onclick="viewWorkItem('WRK002')">VIEW</button></td>
+                            </tr>
+                            <tr data-work-id="WRK003">
+                                <td>WRK003</td>
+                                <td>Mike Johnson</td>
+                                <td>2024-08-13</td>
+                                <td><span class="status-badge status-review">PENDING</span></td>
+                                <td><button class="btn btn-primary" onclick="viewWorkItem('WRK003')">VIEW</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Item Details Page -->
+        <div id="work-item-details" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Work Items Details</h1>
+                <p class="page-subtitle">Review and verify submitted documents</p>
+            </div>
+            <div class="page-content">
+                <div class="details-grid">
+                    <!-- Documents List -->
+                    <div class="details-section">
+                        <h3 class="section-title">Uploaded Documents</h3>
+                        <ul class="document-list">
+                            <li class="document-item" onclick="selectDocument('photograph')">
+                                <div>
+                                    <div>📷 Photograph</div>
+                                    <small>Clear and in focus</small>
+                                </div>
+                                <span class="status-badge status-valid">VALID</span>
+                            </li>
+                            <li class="document-item" onclick="selectDocument('aadhaar')">
+                                <div>
+                                    <div>🆔 Aadhaar Card</div>
+                                    <small>Government ID</small>
+                                </div>
+                                <span class="status-badge status-valid">VALID</span>
+                            </li>
+                            <li class="document-item" onclick="selectDocument('pan')">
+                                <div>
+                                    <div>📄 PAN Card</div>
+                                    <small>Tax identification</small>
+                                </div>
+                                <span class="status-badge status-valid">VALID</span>
+                            </li>
+                            <li class="document-item" onclick="selectDocument('salary')">
+                                <div>
+                                    <div>💰 Salary Proof</div>
+                                    <small>Income verification</small>
+                                </div>
+                                <span class="status-badge status-review">REVIEW</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Document Viewer -->
+                    <div class="details-section">
+                        <h3 class="section-title">Document Viewer</h3>
+                        <div class="document-viewer" id="document-viewer">
+                            <div>
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">👁️</div>
+                                <p>Select a document from the list to view it here.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Details -->
+                    <div class="details-section">
+                        <h3 class="section-title">Personal Details</h3>
+                        <div class="personal-details">
+                            <div class="detail-row">
+                                <span>First Name:</span>
+                                <span>John <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Middle Name:</span>
+                                <span>M <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Last Name:</span>
+                                <span>Doe <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Email:</span>
+                                <span>john.doe@example.com <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Phone:</span>
+                                <span>123-456-7890 <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Aadhaar:</span>
+                                <span>XXXX XXXX XXXX <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>PAN:</span>
+                                <span>ABCDE1234F <span class="verified-icon">✓</span></span>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 1.5rem 0 1rem 0; color: #374151;">Employment Details</h4>
+                        <div class="personal-details">
+                            <div class="detail-row">
+                                <span>Employer:</span>
+                                <span>ABC Corp <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Annual Income:</span>
+                                <span>75000 <span class="verified-icon">✓</span></span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Work Experience:</span>
+                                <span>5 years <span class="verified-icon">✓</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">Work Item Information</h4>
+                    <div class="detail-item">
+                        <div class="detail-label">WORK ID:</div>
+                        <div class="detail-value" id="current-work-id">WRK001</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Submitted by:</div>
+                        <div class="detail-value">John Doe</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Submission Date:</div>
+                        <div class="detail-value">2024-08-15</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Customer Name:</div>
+                        <div class="detail-value">John M. Doe</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Loan Type:</div>
+                        <div class="detail-value">Personal Loan</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Loan Amount:</div>
+                        <div class="detail-value">$50,000</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Notes from Maker:</div>
+                        <div class="detail-value">All documents submitted. Salary proof needs verification against bank statement.</div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="approveWorkItem()">APPROVE</button>
+                    <button class="btn btn-danger" onclick="rejectWorkItem()">REJECT</button>
+                    <button class="btn btn-warning" onclick="sendBackToMaker()">SEND BACK TO MAKER</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finished Tasks Page -->
+        <div id="finished-tasks" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Finished Tasks</h1>
+                <p class="page-subtitle">Completed verification tasks</p>
+            </div>
+            <div class="page-content">
+                <div class="filter-section">
+                    <label>FILTER BY: </label>
+                    <input type="text" class="filter-input" placeholder="Enter Work ID, Name, or Date" onkeyup="filterFinishedTasks(this.value)">
+                </div>
+                <div class="table-container">
+                    <table id="finished-tasks-table">
+                        <thead>
+                            <tr>
+                                <th>WORK ID</th>
+                                <th>CUSTOMER NAME</th>
+                                <th>COMPLETION DATE</th>
+                                <th>STATUS</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Finished tasks will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentWorkId = null;
+        let finishedTasks = [];
+
+        // Navigation functions
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update navigation active state
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            // Find and activate the corresponding nav item
+            const activeNavItem = Array.from(navItems).find(item => 
+                item.textContent.toLowerCase().replace(' ', '-') === pageId
+            );
+            if (activeNavItem) {
+                activeNavItem.classList.add('active');
+            }
+        }
+
+        function viewWorkItem(workId) {
+            currentWorkId = workId;
+            document.getElementById('current-work-id').textContent = workId;
+            showPage('work-item-details');
+        }
+
+        function goBackToQueue() {
+            showPage('work-queue');
+        }
+
+        // Document selection
+        function selectDocument(docType) {
+            // Remove previous selection
+            const items = document.querySelectorAll('.document-item');
+            items.forEach(item => item.classList.remove('selected'));
+            
+            // Add selection to clicked item
+            event.target.closest('.document-item').classList.add('selected');
+            
+            // Update document viewer
+            const viewer = document.getElementById('document-viewer');
+            const docNames = {
+                'photograph': 'Photograph',
+                'aadhaar': 'Aadhaar Card',
+                'pan': 'PAN Card',
+                'salary': 'Salary Proof'
+            };
+            
+            viewer.innerHTML = `
+                <div>
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                    <h3>${docNames[docType]}</h3>
+                    <p>Document preview would appear here</p>
+                    <div style="margin-top: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 6px;">
+                        <small>In a real application, this would show the actual document image or PDF</small>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Action functions
+        function approveWorkItem() {
+            if (!currentWorkId) return;
+            
+            // Add to finished tasks
+            const finishedTask = {
+                workId: currentWorkId,
+                customerName: 'John M. Doe',
+                completionDate: new Date().toISOString().split('T')[0],
+                status: 'APPROVED'
+            };
+            
+            finishedTasks.push(finishedTask);
+            updateFinishedTasksTable();
+            
+            // Remove from pending tasks
+            const taskRow = document.querySelector(`tr[data-work-id="${currentWorkId}"]`);
+            if (taskRow) {
+                taskRow.remove();
+            }
+            
+            alert(`Work item ${currentWorkId} has been approved!`);
+            showPage('finished-tasks');
+        }
+
+        function rejectWorkItem() {
+            if (!currentWorkId) return;
+            
+            // Add to finished tasks
+            const finishedTask = {
+                workId: currentWorkId,
+                customerName: 'John M. Doe',
+                completionDate: new Date().toISOString().split('T')[0],
+                status: 'REJECTED'
+            };
+            
+            finishedTasks.push(finishedTask);
+            updateFinishedTasksTable();
+            
+            // Remove from pending tasks
+            const taskRow = document.querySelector(`tr[data-work-id="${currentWorkId}"]`);
+            if (taskRow) {
+                taskRow.remove();
+            }
+            
+            alert(`Work item ${currentWorkId} has been rejected!`);
+            showPage('finished-tasks');
+        }
+
+        function sendBackToMaker() {
+            if (!currentWorkId) return;
+            alert(`Work item ${currentWorkId} has been sent back to maker for revision!`);
+            goBackToQueue();
+        }
+
+        // Filter functions
+        function filterTasks(searchTerm) {
+            const table = document.getElementById('tasks-table');
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function filterFinishedTasks(searchTerm) {
+            const table = document.getElementById('finished-tasks-table');
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Update finished tasks table
+        function updateFinishedTasksTable() {
+            const tbody = document.querySelector('#finished-tasks-table tbody');
+            tbody.innerHTML = '';
+            
+            finishedTasks.forEach(task => {
+                const statusClass = task.status === 'APPROVED' ? 'status-valid' : 'status-review';
+                const row = `
+                    <tr>
+                        <td>${task.workId}</td>
+                        <td>${task.customerName}</td>
+                        <td>${task.completionDate}</td>
+                        <td><span class="status-badge ${statusClass}">${task.status}</span></td>
+                        <td><button class="btn btn-primary" onclick="viewCompletedItem('${task.workId}')">VIEW</button></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function viewCompletedItem(workId) {
+            alert(`Viewing completed work item: ${workId}`);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial active navigation
+            showPage('dashboard');
+        });
+    </script>
+</body>
+</html>
